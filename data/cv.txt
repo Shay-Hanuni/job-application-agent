@@ -1,0 +1,2 @@
+Computer Science graduate with experience in Python, GitHub, SQL databases, QA, REST API projects, and browser automation.
+Built academic projects involving object-oriented programming, testing, data processing, and automation scripts.

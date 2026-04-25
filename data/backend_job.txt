@@ -1,0 +1,2 @@
+We are looking for a Junior Backend Developer with knowledge of Python, SQL, REST API, Git, debugging, object-oriented programming, databases, and problem-solving.
+The role includes developing backend services, writing clean code, working with APIs, and maintaining database queries.

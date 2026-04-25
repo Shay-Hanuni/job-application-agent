@@ -1,0 +1,2 @@
+We are looking for a Junior QA Automation Engineer with knowledge of Python, Selenium, API testing, SQL, Git, debugging, and test automation.
+The role includes writing automated tests, maintaining test scripts, and working with developers.
