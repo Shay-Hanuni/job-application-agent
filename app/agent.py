@@ -1,69 +1,58 @@
-from app.tools import extract_all_skills, compare_keywords
+from app.skill_normalizer import compare_skill_sets, calculate_match_score
 
-def create_ats_analysis(cv_text: str, job_text: str) -> dict:
+
+def analyze_application(cv_text: str, job_description_text: str) -> dict:
     """
-    Creates a structured ATS analysis based on CV and job description.
-    Returns a dictionary that can be saved as JSON.
+    Analyze the match between a CV and a job description.
+
+    The analysis focuses on relevant skills instead of generic keywords.
+    This prevents unrelated words from lowering the final score.
     """
-    cv_keywords = extract_all_skills(cv_text)
-    job_keywords = extract_all_skills(job_text)
-    comparison = compare_keywords(cv_keywords, job_keywords)
+    comparison = compare_skill_sets(cv_text, job_description_text)
+    scores = calculate_match_score(comparison)
 
-    recommendations = []
-
-    if comparison["missing_keywords"]:
-        for keyword in comparison["missing_keywords"][:10]:
-            recommendations.append(
-                f"Add or emphasize '{keyword}' in your CV if it reflects your real knowledge, coursework, or projects."
-            )
-    else:
-        recommendations.append(
-            "Your CV already contains the main keywords from the job description."
-        )
+    recommendations = generate_recommendations(comparison, scores)
 
     return {
-        "match_score": comparison["match_score"],
-        "cv_keywords": cv_keywords,
-        "job_keywords": job_keywords,
-        "matched_keywords": comparison["matched_keywords"],
-        "missing_keywords": comparison["missing_keywords"],
-        "recommendations": recommendations
+        "scores": scores,
+        "comparison": comparison,
+        "recommendations": recommendations,
     }
 
 
-def create_text_report(analysis: dict) -> str:
+def generate_recommendations(comparison: dict, scores: dict) -> list:
     """
-    Converts the structured ATS analysis into a readable text report.
+    Generate practical recommendations based on missing skills.
     """
-    report = f"""
-JOB APPLICATION AGENT - LOCAL ATS REPORT
-========================================
+    recommendations = []
 
-MATCH SCORE:
-{analysis["match_score"]}%
+    missing_technical = comparison.get("missing_technical_skills", [])
+    missing_soft = comparison.get("missing_soft_skills", [])
+    final_score = scores.get("final_score", 0)
 
-CV KEYWORDS:
-{", ".join(analysis["cv_keywords"])}
+    if missing_technical:
+        recommendations.append(
+            "Consider adding relevant technical skills from the job description if you have real experience with them: "
+            + ", ".join(missing_technical)
+        )
 
-JOB DESCRIPTION KEYWORDS:
-{", ".join(analysis["job_keywords"])}
+    if missing_soft:
+        recommendations.append(
+            "Consider reflecting the following soft skills in your CV using real examples: "
+            + ", ".join(missing_soft)
+        )
 
-MATCHED KEYWORDS:
-{", ".join(analysis["matched_keywords"]) if analysis["matched_keywords"] else "No matched keywords found."}
+    if final_score >= 80:
+        recommendations.append(
+            "The CV has a strong match with the job description. Focus on polishing wording and adding measurable achievements."
+        )
+    elif final_score >= 60:
+        recommendations.append(
+            "The CV has a reasonable match, but several important skills are missing or not clearly shown."
+        )
+    else:
+        recommendations.append(
+            "The CV has a low match for this role. Add only skills that truly reflect your experience and consider tailoring the CV more specifically to the job."
+        )
 
-MISSING KEYWORDS:
-{", ".join(analysis["missing_keywords"]) if analysis["missing_keywords"] else "No missing keywords found."}
-
-RECOMMENDATIONS:
-"""
-
-    for recommendation in analysis["recommendations"]:
-        report += f"- {recommendation}\n"
-
-    report += """
-IMPORTANT NOTE:
-Do not add skills or experience that are not true.
-Only include missing keywords if they reflect your real knowledge, coursework, or projects.
-"""
-
-    return report
+    return recommendations

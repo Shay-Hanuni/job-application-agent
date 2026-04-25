@@ -1,22 +1,54 @@
 import os
-import json
 
 
-def save_text_report(report: str, path: str) -> None:
+def write_report(analysis_result: dict, output_path: str) -> None:
     """
-    Saves the readable text report into a TXT file.
+    Write the analysis result into a readable text report.
     """
-    os.makedirs(os.path.dirname(path), exist_ok=True)
+    os.makedirs(os.path.dirname(output_path), exist_ok=True)
 
-    with open(path, "w", encoding="utf-8") as file:
-        file.write(report)
+    scores = analysis_result.get("scores", {})
+    comparison = analysis_result.get("comparison", {})
+    recommendations = analysis_result.get("recommendations", [])
+
+    with open(output_path, "w", encoding="utf-8") as file:
+        file.write("JOB APPLICATION ANALYSIS REPORT\n")
+        file.write("=" * 40 + "\n\n")
+
+        file.write("MATCH SCORES\n")
+        file.write("-" * 40 + "\n")
+        file.write(f"Final Score: {scores.get('final_score', 0)}%\n")
+        file.write(f"Technical Skills Score: {scores.get('technical_score', 0)}%\n")
+        file.write(f"Soft Skills Score: {scores.get('soft_score', 0)}%\n\n")
+
+        file.write("MATCHED TECHNICAL SKILLS\n")
+        file.write("-" * 40 + "\n")
+        write_list(file, comparison.get("matched_technical_skills", []))
+
+        file.write("\nMISSING TECHNICAL SKILLS\n")
+        file.write("-" * 40 + "\n")
+        write_list(file, comparison.get("missing_technical_skills", []))
+
+        file.write("\nMATCHED SOFT SKILLS\n")
+        file.write("-" * 40 + "\n")
+        write_list(file, comparison.get("matched_soft_skills", []))
+
+        file.write("\nMISSING SOFT SKILLS\n")
+        file.write("-" * 40 + "\n")
+        write_list(file, comparison.get("missing_soft_skills", []))
+
+        file.write("\nRECOMMENDATIONS\n")
+        file.write("-" * 40 + "\n")
+        write_list(file, recommendations)
 
 
-def save_json_report(data: dict, path: str) -> None:
+def write_list(file, items: list) -> None:
     """
-    Saves the structured analysis into a JSON file.
+    Write a list of items into the report.
     """
-    os.makedirs(os.path.dirname(path), exist_ok=True)
+    if not items:
+        file.write("- None\n")
+        return
 
-    with open(path, "w", encoding="utf-8") as file:
-        json.dump(data, file, indent=4, ensure_ascii=False)
+    for item in items:
+        file.write(f"- {item}\n")
